@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1055211949553",
+    "project_id": "venue-73ba5",
+    "storage_bucket": "venue-73ba5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055211949553:android:c2b1c20822ff4c96be8850",
+        "android_client_info": {
+          "package_name": "com.example.activity"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACAmC3cqW1vzPffm41_LFhzRjrujvYH5s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
