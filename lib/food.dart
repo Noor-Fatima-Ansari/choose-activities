@@ -1,12 +1,13 @@
+import 'package:activity/PictureDecore.dart';
 import 'package:activity/Specify.dart';
+import 'package:activity/dataProvider.dart';
+import 'package:activity/output.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class FoodEstimation extends StatefulWidget {
-  // final Function(int) onNavigate;
-  // FoodEstimation({required this.onNavigate});
-
   @override
   createState() => _FoodEstimationScreenState();
 }
@@ -18,20 +19,15 @@ class _FoodEstimationScreenState extends State<FoodEstimation> {
   TextEditingController maleController = TextEditingController();
   TextEditingController femaleController = TextEditingController();
   TextEditingController kidsController = TextEditingController();
-  int budget = 0;
 
+  // List<int> selectedItemPrices = context.watch<Dataprovider>().getSelectedPrices();
   List<String> Cpics = [
     "images/indian.png",
     "images/italian.png",
     "images/pakistani.png",
     "images/arabian.png"
   ];
-  List<String> Ctitle = [
-    "Indian Cuisine",
-    "Italian Cuisine",
-    "Pakistani Cuisine",
-    "Arabian Cuisine"
-  ];
+  List<String> Ctitle = ["Indian", "Italian", "Pakistani", "Arabian"];
 
   String? _validateTotal(String? value) {
     if (value == null || value.isEmpty) {
@@ -75,6 +71,7 @@ class _FoodEstimationScreenState extends State<FoodEstimation> {
 
   @override
   Widget build(BuildContext context) {
+    var itemPrices = context.watch<Dataprovider>().getSelectedPrices();
     // final uid = FirebaseAuth.instance.currentUser?.uid;
     // final CollectionReference reference = FirebaseFirestore.instance
     //     .collection("User Data")
@@ -84,6 +81,29 @@ class _FoodEstimationScreenState extends State<FoodEstimation> {
     Specify specify = Specify();
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
+    double calculateTotalBudget(
+      int numberOfMales,
+      int numberOfFemales,
+      int numberOfKids,
+      List<int> selectedItemPrices,
+    ) {
+      // Step 1: Calculate total portions
+      double totalPortions =
+          (numberOfMales * 1) + (numberOfFemales * 0.75) + (numberOfKids * 0.5);
+
+      // Step 2: Calculate portion per item
+      int numberOfItems = selectedItemPrices.length;
+      double portionPerItem = totalPortions / numberOfItems;
+
+      // Step 3: Calculate total budget
+      double totalBudget = 0;
+      for (int price in selectedItemPrices) {
+        totalBudget += price * portionPerItem;
+      }
+
+      return totalBudget;
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -256,20 +276,42 @@ class _FoodEstimationScreenState extends State<FoodEstimation> {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
+                      // double? totalBudget;
                       // if (formKey.currentState!.validate()) {
-                      //   reference.add({
-                      //     "Cuisine Type": specify.cuisineType,
-                      //     "Total People": totalController.text,
-                      //     "No of Males": maleController.text,
-                      //     "No of Females": femaleController.text,
-                      //     "No of Kids": kidsController.text,
-                      //     "Cuisine Budget": budgetController.text,
-                      //   }).then((_) => Navigator.of(context).push(
-                      //       MaterialPageRoute(
-                      //           builder: (context) => OutputScreen())));
+                      //   // Calculation
+                      //   totalBudget = calculateTotalBudget(
+                      //     int.parse(maleController.text),
+                      //     int.parse(femaleController.text),
+                      //     int.parse(kidsController.text),
+                      //     itemPrices,
+                      //   );
+
+                      //   // Print the result
+                      //   print(
+                      //       "Total Budget: ${totalBudget.toStringAsFixed(2)} PKR");
                       // }
+
+                      // context.read<Dataprovider>().setFoodBudget(
+                      //     "Total Budget: ${totalBudget?.toStringAsFixed(2)} PKR");
+
+                      // Print the result
+
                       if (formKey.currentState!.validate()) {
-                        // budget = int.parse();
+                        // Perform budget calculation
+                        double totalBudget = calculateTotalBudget(
+                          int.parse(maleController.text),
+                          int.parse(femaleController.text),
+                          int.parse(kidsController.text),
+                          itemPrices,
+                        );
+
+                        context.read<Dataprovider>().setFoodBudget(
+                            "Total Budget: ${totalBudget.toStringAsFixed(2)} PKR");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => PictureDecor()),
+                        );
                       }
                     },
                     style: ElevatedButton.styleFrom(

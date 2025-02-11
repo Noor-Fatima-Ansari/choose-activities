@@ -17,6 +17,7 @@ class _OutputPageState extends State<OutputPage> {
     List<String> male = context.watch<Dataprovider>().maleData;
     List<String> female = context.watch<Dataprovider>().femaleData;
     List<String> kids = context.watch<Dataprovider>().kidsData;
+    String? budget = context.watch<Dataprovider>().getFoodBudget;
     return Scaffold(
       body: Container(
         padding: const EdgeInsets.all(16.0),
@@ -73,6 +74,10 @@ class _OutputPageState extends State<OutputPage> {
                 ),
               ],
             ),
+            SizedBox(
+              height: 10,
+            ),
+            Text(budget!),
           ],
         ),
       ),
