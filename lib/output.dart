@@ -12,8 +12,10 @@ class OutputPage extends StatefulWidget {
 }
 
 class _OutputPageState extends State<OutputPage> {
+  
   @override
   Widget build(BuildContext context) {
+    Map<String, dynamic>? selectedVenue = context.watch<Dataprovider>().selectedVenue;
     List<String> male = context.watch<Dataprovider>().maleData;
     List<String> female = context.watch<Dataprovider>().femaleData;
     List<String> kids = context.watch<Dataprovider>().kidsData;
@@ -78,7 +80,50 @@ class _OutputPageState extends State<OutputPage> {
               height: 10,
             ),
             Text(budget!),
+            SizedBox(
+              height: 10,
+            ),
+
+// showing venues data
+
+         Container(
+          child: selectedVenue != null
+    ? Column(
+        children: [
+          Row(
+            children: [
+              Text("Venue Name: "),
+              Text("${selectedVenue['name']}"),
+            ],
+          ),
+          Row(
+            children: [
+              Text("Address: "),
+              Text("${selectedVenue['address']}"),
+            ],
+          ),
+          Row(
+            children: [
+              Text("Venue Price: "),
+              Text("${selectedVenue['price']}"),
+            ],
+          ),
+          Row(
+            children: [
+              Text("Contact No: "),
+              Text("${selectedVenue['phone']}"),
+            ],
+          ),
+        ],
+      )
+    : Text("No venue selected"),
+
+         )
+
           ],
+
+
+
         ),
       ),
     );

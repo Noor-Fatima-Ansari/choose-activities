@@ -354,82 +354,170 @@ class Specify {
   }
 
 // for area
-  Widget buildCardListArea(
-      String label, List<String> pictureList, List<String> titleList) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
+ Widget buildCardListArea(
+    String label, List<String> pictureList, List<String> titleList) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
-        SizedBox(
-          height: 150,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: pictureList.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: InkWell(
-                  onTap: () {
-                    print('Card ${titleList[index]} tapped');
-                  },
-                  child: Container(
-                    width: 90,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            pictureList[index],
-                            width: 90,
-                            height: 150,
-                            fit: BoxFit.cover,
+      ),
+      SizedBox(
+        height: 150,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: pictureList.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: InkWell(
+                onTap: () async {
+                  final provider = Provider.of<Dataprovider>(context, listen: false);
+                  final String city = titleList[index];
+                  final String? budgetText = provider.getVenueBudget;
+                  final int? budget = int.tryParse(budgetText!);
+
+                  if (budget == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Please set a valid budget first.")),
+                    );
+                    return;
+                  }
+
+                  provider.setCityType(city);
+
+                  try {
+                    final snapshot = await FirebaseFirestore.instance
+                        .collection("Venues")
+                        .doc(city)
+                        .get();
+
+                    if (!snapshot.exists) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("No venues found for $city")),
+                      );
+                      return;
+                    }
+
+                    List venues = snapshot.data()!['restaurants'];
+                    List filteredVenues = venues
+                        .where((venue) =>
+                            venue['price'] != null && venue['price'] <= budget)
+                        .toList();
+
+                    if (filteredVenues.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("No venues under the budget in $city")),
+                      );
+                      return;
+                    }
+
+                    // Venue selection dialog
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text("Venues in $city"),
+                        content: SizedBox(
+                          width: double.maxFinite,
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: filteredVenues.length,
+                            itemBuilder: (context, i) {
+                              var v = filteredVenues[i];
+                              return Card(
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ListTile(
+                                  title: Text(v['name']),
+                                  subtitle: Text("Price: ${v['price']}"),
+                                  onTap: () {
+                                    provider.setSelectedVenue(v);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            "Venue selected: ${v['name']}"),
+                                      ),
+                                    );
+                                    Navigator.pop(context); // Close dialog
+                                  },
+                                ),
+                              );
+                            },
                           ),
                         ),
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            height: 20,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
-                              borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(12),
-                                bottomRight: Radius.circular(12),
-                              ),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: Text(
-                              titleList[index],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 7,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text("Close"),
+                          )
+                        ],
+                      ),
+                    );
+                  } catch (e) {
+                    print("Error fetching venues: $e");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error fetching venues.")),
+                    );
+                  }
+                },
+                child: Container(
+                  width: 90,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          pictureList[index],
+                          width: 90,
+                          height: 150,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          height: 20,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(12),
+                              bottomRight: Radius.circular(12),
                             ),
                           ),
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: Text(
+                            titleList[index],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 7,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
   // grey code
   Widget buildGreyText(String label) {

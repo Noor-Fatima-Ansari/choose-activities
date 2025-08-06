@@ -6,6 +6,8 @@ class Dataprovider extends ChangeNotifier {
   String? eventType;
   String? _cuisineType;
   String _foodBudget = "";
+  String _venueBudget="";
+  String? cityType;
   void setChoosedData(
       List<String> maleData, List<String> femaleData, List<String> kidsData) {
     this.choosedMale = maleData;
@@ -25,6 +27,16 @@ class Dataprovider extends ChangeNotifier {
 
   String? get getEventType => eventType;
 
+
+ void setCityType(String city) {
+    this.cityType = city;
+    notifyListeners();
+  }
+
+  String? get getCityType => cityType;
+
+
+
   void setCuisineType(String cuisine) {
     _cuisineType = cuisine;
     notifyListeners();
@@ -32,6 +44,27 @@ class Dataprovider extends ChangeNotifier {
 
   // Getter for cuisine type
   String? get getCuisineType => _cuisineType;
+
+//Budget setting for the venue list
+void setVenueBudget(String budget) {
+  _venueBudget = budget;
+  notifyListeners();
+}
+
+String get getVenueBudget => _venueBudget;
+
+
+
+// setting the venue touple:
+Map<String, dynamic>? _selectedVenue;
+
+void setSelectedVenue(Map<String, dynamic> venueData) {
+  _selectedVenue = venueData;
+  notifyListeners();
+}
+
+Map<String, dynamic>? get selectedVenue => _selectedVenue;
+
   // void retrieveActivityData(String eventCollection) async {
   //   // Reference to the Firestore collection and document
   //   var eventType = eventCollection.toLowerCase();

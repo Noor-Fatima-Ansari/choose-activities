@@ -13,12 +13,34 @@ class PictureDecor extends StatefulWidget {
 }
 
 class _PictureDecorState extends State<PictureDecor> {
+
+// venues data upload function (for hyd):
+void uploadHyderabadVenues(List<Map<String, dynamic>> venues) async {
+  try {
+    await FirebaseFirestore.instance
+        .collection('Venues')
+        .doc('Hyderabad')
+        .set({'restaurants': venues});
+    print('Data uploaded successfully');
+  } catch (e) {
+    print('Error uploading data: $e');
+  }
+}
+
+
+
+TextEditingController _budgetController = TextEditingController();
+
+
+
   List<String> Apics = [
     "images/hyd.png",
     "images/karachi.png",
     "images/Islamabad.png",
     "images/lahore.png"
   ];
+
+
   List<String> Atitle = ["Hyderabad", "Karachi", "Islamabad", "Lahore"];
   List<String> Epics = [
     "images/birthday.png",
@@ -37,72 +59,14 @@ class _PictureDecorState extends State<PictureDecor> {
     "Graduation"
   ];
 
-  // void _showActivityDialog(BuildContext context) {
-  //   final Map<String, dynamic> activityData= context.read<Dataprovider>().maleData;
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text(
-  //           "Choose Activity",
-  //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-  //         ),
-  //         content: Consumer<Dataprovider>(
-  //           builder: (context, dataProvider, child) {
-  //             return SizedBox(
-  //               width: double.maxFinite,
-  //               child: Column(
-  //                 mainAxisSize: MainAxisSize.min,
-  //                 children: [
-  //                   GestureDetector(
-  //                     onTap: () {
-  //                       print("Option 1 Selected");
-  //                       Navigator.of(context).pop();
-  //                     },
-  //                     child: Card(
-  //                       margin: const EdgeInsets.symmetric(vertical: 8),
-  //                       child: Padding(
-  //                         padding: const EdgeInsets.all(16.0),
-  //                         child: Column(
-  //                           crossAxisAlignment: CrossAxisAlignment.start,
-  //                           children: [
-  //                             Text(
-  //                               "Option 1",
-  //                               style: TextStyle(
-  //                                 fontSize: 16,
-  //                                 fontWeight: FontWeight.bold,
-  //                               ),
-  //                             ),
-  //                             const SizedBox(height: 8),
-  //                             Text(
-  //                                 "Male: ${dataProvider.maleData ?? 'Loading...'}"),
-  //                             Text(
-  //                                 "Female: ${dataProvider.femaleData ?? 'Loading...'}"),
-  //                             Text(
-  //                                 "Kids: ${dataProvider.kidsDats ?? 'Loading...'}"),
-  //                           ],
-  //                         ),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   // You can add more options (Option 2, Option 3) similarly here
-  //                 ],
-  //               ),
-  //             );
-  //           },
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog
-  //             },
-  //             child: Text("Cancel"),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
+
+
+
+
+
+
+
+
 
   _showActivityDialog(BuildContext context, String eventCollection) {
     print("Opening Activity Dialog for $eventCollection"); // Debug
@@ -245,49 +209,116 @@ class _PictureDecorState extends State<PictureDecor> {
                 const SizedBox(height: 20),
 
                 // Budget Section
-                const Text(
-                  "Budget",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  height: screenHeight * 0.15,
-                  decoration: BoxDecoration(
-                    color: Colors.purple[50],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(screenWidth * 0.02),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: "Enter your budget for Place",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Set budget logic
-                          },
-                          child: const Text("Set Budget"),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple[50],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+
+// Budget Section
+const Text(
+  "Budget",
+  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+),
+const SizedBox(height: 8),
+Container(
+  height: screenHeight * 0.15,
+  decoration: BoxDecoration(
+    color: Colors.purple[50],
+    borderRadius: BorderRadius.circular(12),
+  ),
+  child: Padding(
+    padding: EdgeInsets.all(screenWidth * 0.02),
+    child: Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _budgetController,
+            decoration: InputDecoration(
+              hintText: "Enter your budget for venue",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+        ),
+        const SizedBox(width: 8),
+        ElevatedButton(
+          onPressed: () {
+
+
+            
+            final budgetText = _budgetController.text.trim();
+            if (budgetText.isEmpty || int.tryParse(budgetText) == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Please enter a valid numeric budget")),
+              );
+            } else {
+              context.read<Dataprovider>().setVenueBudget(budgetText);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Budget set successfully")),
+              );
+            }
+          },
+          child: const Text("Set Budget"),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.purple[100],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
+
+
+
+                // const Text(
+                //   "Budget",
+                //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                // ),
+                // const SizedBox(height: 8),
+                // Container(
+                //   height: screenHeight * 0.15,
+                //   decoration: BoxDecoration(
+                //     color: Colors.purple[50],
+                //     borderRadius: BorderRadius.circular(12),
+                //   ),
+                //   child: Padding(
+                //     padding: EdgeInsets.all(screenWidth * 0.02),
+                //     child: Row(
+                //       children: [
+                //         Expanded(
+                //           child: TextField(
+                //             decoration: InputDecoration(
+                //               hintText: "Enter your budget for venue",
+                //               border: OutlineInputBorder(
+                //                 borderRadius: BorderRadius.circular(12),
+                //               ),
+                //             ),
+                //             keyboardType: TextInputType.number,
+                //           ),
+                //         ),
+                //         const SizedBox(width: 8),
+                //         ElevatedButton(
+                //           onPressed: () {
+                //           // uploadHyderabadVenues(hyderabadVenues);
+
+                //             // Set budget logic
+                //           },
+                //           child: const Text("Set Budget"),
+                //           style: ElevatedButton.styleFrom(
+                //             backgroundColor: Colors.purple[50],
+                //             shape: RoundedRectangleBorder(
+                //               borderRadius: BorderRadius.circular(12),
+                //             ),
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+
+
 
                 const SizedBox(height: 20),
 
